@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, addDoc, updateDoc, serverTimestamp, query, where } from 'firebase/firestore';
-import { Users, BookOpen, Ticket, PlusCircle, LayoutDashboard, ClipboardCheck, Trophy, Copy, CheckCircle, Trash2, LogOut, PlayCircle, ChevronLeft, User, Lock, Phone, Heart, BarChart3, Clock, FileText, Video, Download, Plus, Settings, Filter, Beaker, Atom, Sparkles, Image as ImageIcon, Upload, Check, Eye, Link as LinkIcon, Zap, Radiation, Microscope } from 'lucide-react';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { Users, BookOpen, Zap, LogOut, LayoutDashboard, PlusCircle, Trash2, CheckCircle } from 'lucide-react';
 
+// البيانات الحقيقية من صورتك يا مستر محمد
 const firebaseConfig = {
   apiKey: "AIzaSyB62pVLYvF5nz3Al_7gUObhquwRCk7u9Ug",
   authDomain: "my-project-7a829.firebaseapp.com",
   projectId: "my-project-7a829",
-  storageBucket: "my-project-7a829.appspot.com",
+  storageBucket: "my-project-7a829.firebasestorage.app",
   messagingSenderId: "886956896190",
   appId: "1:886956896190:web:d2eeaad2fd10780ed553ef"
 };
@@ -21,8 +22,8 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('login');
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminPass, setAdminPass] = useState('');
+  const [email, setEmail] = useState('');
+  const [pass, setPass] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -39,13 +40,13 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleAdminLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      await signInWithEmailAndPassword(auth, adminEmail, adminPass);
+      await signInWithEmailAndPassword(auth, email, pass);
     } catch (err) {
-      setError('بيانات الدخول غير صحيحة');
+      setError('بيانات الدخول غير صحيحة، تأكد من الإيميل والباسورد في فايربيز');
     }
   };
 
@@ -55,50 +56,68 @@ export default function App() {
     </div>
   );
 
-  if (view === 'login') {
+  if (view === 'login' || view === 'admin_auth') {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-[#0f172a] border border-blue-900/50 p-8 rounded-2xl text-center">
-          <h1 className="text-2xl font-bold text-white mb-8">منصة المستر محمد سلامة</h1>
-          <button 
-            onClick={() => setView('admin_auth')}
-            className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition"
-          >
-            دخول الإدارة
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (view === 'admin_auth') {
-    return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
-        <form onSubmit={handleAdminLogin} className="max-w-md w-full bg-[#0f172a] border border-blue-900/50 p-8 rounded-2xl">
-          <h2 className="text-xl font-bold text-white mb-6 text-center">تسجيل دخول الإدارة</h2>
-          {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-          <input 
-            type="email" placeholder="البريد الإلكتروني" 
-            className="w-full bg-[#1e293b] border border-blue-900/50 p-3 rounded-lg mb-4 text-white"
-            value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)}
-          />
-          <input 
-            type="password" placeholder="كلمة السر" 
-            className="w-full bg-[#1e293b] border border-blue-900/50 p-3 rounded-lg mb-6 text-white"
-            value={adminPass} onChange={(e) => setAdminPass(e.target.value)}
-          />
-          <button className="w-full bg-blue-600 py-3 rounded-lg font-bold">دخول</button>
-          <button type="button" onClick={() => setView('login')} className="w-full mt-4 text-gray-400">رجوع</button>
+        <form onSubmit={handleLogin} className="max-w-md w-full bg-[#0f172a] border border-blue-900/50 p-8 rounded-2xl shadow-2xl">
+          <h1 className="text-2xl font-bold text-white mb-2 text-center">منصة المستر محمد سلامة</h1>
+          <p className="text-blue-400 text-sm text-center mb-8 font-medium">لوحة تحكم الإدارة</p>
+          
+          {error && <p className="bg-red-500/10 text-red-500 border border-red-500/50 p-3 rounded-lg mb-6 text-sm text-center">{error}</p>}
+          
+          <div className="space-y-4">
+            <input 
+              type="email" placeholder="البريد الإلكتروني" 
+              className="w-full bg-[#1e293b] border border-blue-900/30 p-3 rounded-xl text-white outline-none focus:border-blue-500 transition"
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input 
+              type="password" placeholder="كلمة السر" 
+              className="w-full bg-[#1e293b] border border-blue-900/30 p-3 rounded-xl text-white outline-none focus:border-blue-500 transition"
+              value={pass} onChange={(e) => setPass(e.target.value)}
+              required
+            />
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">
+              دخول الإدارة
+            </button>
+          </div>
         </form>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] p-8 text-center">
-      <h1 className="text-3xl font-bold text-white">أهلاً بك في لوحة تحكم الإدارة يا مستر محمد! 🚀</h1>
-      <p className="mt-4 text-blue-300">لقد نجحت في بناء منصتك الخاصة.</p>
-      <button onClick={() => auth.signOut()} className="mt-8 bg-red-600 px-6 py-2 rounded-lg">تسجيل خروج</button>
+    <div className="min-h-screen bg-[#020617] text-white p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="flex justify-between items-center mb-12 bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30">
+          <div>
+            <h1 className="text-2xl font-bold">أهلاً بك يا مستر محمد 👋</h1>
+            <p className="text-blue-400 text-sm">لوحة تحكم المنصة جاهزة للعمل</p>
+          </div>
+          <button onClick={() => auth.signOut()} className="flex items-center gap-2 bg-red-500/10 text-red-500 px-4 py-2 rounded-lg hover:bg-red-500/20 transition">
+            <LogOut size={18} /> خروج
+          </button>
+        </header>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30 text-center">
+            <BookOpen className="mx-auto text-blue-500 mb-4" size={32} />
+            <h3 className="font-bold">الحصص</h3>
+            <p className="text-2xl mt-2">0</p>
+          </div>
+          <div className="bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30 text-center">
+            <Users className="mx-auto text-purple-500 mb-4" size={32} />
+            <h3 className="font-bold">الطلاب</h3>
+            <p className="text-2xl mt-2">0</p>
+          </div>
+          <div className="bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30 text-center">
+            <CheckCircle className="mx-auto text-green-500 mb-4" size={32} />
+            <h3 className="font-bold">الأكواد المباعة</h3>
+            <p className="text-2xl mt-2">0</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
