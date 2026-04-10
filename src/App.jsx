@@ -28,9 +28,10 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.email === 'admin@salama.com') {
-        setUser(user);
-        setView('admin_dashboard');
+     if (user && user.email === 'mohamed@test.com') {
+  setUser(user);
+  setView('admin_dashboard');
+}
       } else {
         setUser(null);
         setView('login');
