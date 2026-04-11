@@ -6,7 +6,7 @@ import { Users, BookOpen, Zap, LogOut, LayoutDashboard, PlusCircle, Trash2, Chec
 
 // البيانات الحقيقية من صورتك يا مستر محمد
 const firebaseConfig = {
-  apiKey: "AIzaSyB62pVLYvF5nz3Al_7gUObhquwRCk7u9Ug",
+  apiKey: "AIzaSyD9BPWwptbDa_DyIETLe_DrCKCOhU4HsEc",
   authDomain: "my-project-7a829.firebaseapp.com",
   projectId: "my-project-7a829",
   storageBucket: "my-project-7a829.firebasestorage.app",
