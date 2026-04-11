@@ -1,123 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { Users, BookOpen, Zap, LogOut, LayoutDashboard, PlusCircle, Trash2, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 
-// البيانات الحقيقية من صورتك يا مستر محمد
+// 1. إعدادات فايربيز (المفتاح الجديد السليم تم إضافته)
 const firebaseConfig = {
-  apiKey: "AIzaSyD9BPWwptbDa_DyIETLe_DrCKCOhU4HsEc",
+  apiKey: "AIzaSyD9BPWwptbDa_DylETLe_DrCKCOhU4HsEc", 
   authDomain: "my-project-7a829.firebaseapp.com",
   projectId: "my-project-7a829",
-  storageBucket: "my-project-7a829.firebasestorage.app",
+  storageBucket: "my-project-7a829.appspot.com",
   messagingSenderId: "886956896190",
-  appId: "1:886956896190:web:d2eeaad2fd10780ed553ef"
+  // تأكد من وضع الـ appId الخاص بك هنا إذا كان موجوداً في كودك القديم، أو اتركه كما هو
+  appId: "1:886956896190:web:YOUR_APP_ID" 
 };
 
+// 2. تهيئة فايربيز
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
 export default function App() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [view, setView] = useState('login');
-  const [email, setEmail] = useState('');
-  const [pass, setPass] = useState('');
-  const [error, setError] = useState('');
+  const [view, setView] = useState("login");
+  const [error, setError] = useState("");
 
+  // 3. مراقبة حالة الدخول (هنا كان الخطأ وتم إصلاح الأقواس)
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-     if (user && user.email === 'mohamed@test.com') {
-  setUser(user);
-  setView('admin_dashboard');
-}
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && currentUser.email === "mohamed@test.com") {
+        setUser(currentUser);
+        setView("admin_dashboard");
       } else {
         setUser(null);
-        setView('login');
+        setView("login");
       }
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
+  // 4. دالة تسجيل الدخول
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError(""); 
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      setError('بيانات الدخول غير صحيحة، تأكد من الإيميل والباسورد في فايربيز');
+      console.error(err);
+      setError("بيانات الدخول غير صحيحة، تأكد من الإيميل والباسورد في فايربيز");
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#020617] flex items-center justify-center">
-      <Zap className="w-12 h-12 text-blue-500 animate-pulse" />
-    </div>
-  );
+  // 5. دالة تسجيل الخروج
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  if (view === 'login' || view === 'admin_auth') {
+  // 6. واجهة لوحة الإدارة (عند النجاح)
+  if (view === "admin_dashboard") {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
-        <form onSubmit={handleLogin} className="max-w-md w-full bg-[#0f172a] border border-blue-900/50 p-8 rounded-2xl shadow-2xl">
-          <h1 className="text-2xl font-bold text-white mb-2 text-center">منصة المستر محمد سلامة</h1>
-          <p className="text-blue-400 text-sm text-center mb-8 font-medium">لوحة تحكم الإدارة</p>
-          
-          {error && <p className="bg-red-500/10 text-red-500 border border-red-500/50 p-3 rounded-lg mb-6 text-sm text-center">{error}</p>}
-          
-          <div className="space-y-4">
-            <input 
-              type="email" placeholder="البريد الإلكتروني" 
-              className="w-full bg-[#1e293b] border border-blue-900/30 p-3 rounded-xl text-white outline-none focus:border-blue-500 transition"
-              value={email} onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input 
-              type="password" placeholder="كلمة السر" 
-              className="w-full bg-[#1e293b] border border-blue-900/30 p-3 rounded-xl text-white outline-none focus:border-blue-500 transition"
-              value={pass} onChange={(e) => setPass(e.target.value)}
-              required
-            />
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">
-              دخول الإدارة
-            </button>
-          </div>
-        </form>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#0f172a', color: 'white', fontFamily: 'system-ui' }}>
+        <h1 style={{ fontSize: '2rem', marginBottom: '20px' }}>مرحباً بك يا مستر محمد في لوحة الإدارة! 🚀</h1>
+        <p style={{ marginBottom: '30px', color: '#94a3b8' }}>الإيميل المسجل: {user?.email}</p>
+        <button
+          onClick={handleLogout}
+          style={{ padding: '10px 20px', backgroundColor: '#dc2626', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold' }}
+        >
+          تسجيل الخروج
+        </button>
       </div>
     );
   }
 
+  // 7. واجهة تسجيل الدخول
   return (
-    <div className="min-h-screen bg-[#020617] text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <header className="flex justify-between items-center mb-12 bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30">
-          <div>
-            <h1 className="text-2xl font-bold">أهلاً بك يا مستر محمد 👋</h1>
-            <p className="text-blue-400 text-sm">لوحة تحكم المنصة جاهزة للعمل</p>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#020617', color: 'white', fontFamily: 'system-ui' }}>
+      <div style={{ backgroundColor: '#0f172a', padding: '40px', borderRadius: '10px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)', width: '100%', maxWidth: '400px', textAlign: 'center', border: '1px solid #1e293b' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '10px' }}>منصة المستر محمد سلامة</h2>
+        <p style={{ color: '#60a5fa', marginBottom: '20px', fontSize: '0.9rem' }}>لوحة تحكم الإدارة</p>
+
+        {error && (
+          <div style={{ backgroundColor: '#451a23', color: '#f87171', border: '1px solid #7f1d1d', padding: '12px', borderRadius: '5px', marginBottom: '20px', fontSize: '0.9rem' }}>
+            {error}
           </div>
-          <button onClick={() => auth.signOut()} className="flex items-center gap-2 bg-red-500/10 text-red-500 px-4 py-2 rounded-lg hover:bg-red-500/20 transition">
-            <LogOut size={18} /> خروج
+        )}
+
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <input
+            type="email"
+            placeholder="mohamed@test.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ padding: '12px', borderRadius: '5px', backgroundColor: '#1e293b', border: '1px solid #334155', color: 'white', outline: 'none' }}
+            required
+          />
+          <input
+            type="password"
+            placeholder="........"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ padding: '12px', borderRadius: '5px', backgroundColor: '#1e293b', border: '1px solid #334155', color: 'white', outline: 'none', textAlign: 'left' }}
+            dir="ltr"
+            required
+          />
+          <button
+            type="submit"
+            style={{ padding: '12px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', marginTop: '10px', transition: 'background 0.3s' }}
+          >
+            دخول الإدارة
           </button>
-        </header>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30 text-center">
-            <BookOpen className="mx-auto text-blue-500 mb-4" size={32} />
-            <h3 className="font-bold">الحصص</h3>
-            <p className="text-2xl mt-2">0</p>
-          </div>
-          <div className="bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30 text-center">
-            <Users className="mx-auto text-purple-500 mb-4" size={32} />
-            <h3 className="font-bold">الطلاب</h3>
-            <p className="text-2xl mt-2">0</p>
-          </div>
-          <div className="bg-[#0f172a] p-6 rounded-2xl border border-blue-900/30 text-center">
-            <CheckCircle className="mx-auto text-green-500 mb-4" size={32} />
-            <h3 className="font-bold">الأكواد المباعة</h3>
-            <p className="text-2xl mt-2">0</p>
-          </div>
-        </div>
+        </form>
       </div>
     </div>
   );
