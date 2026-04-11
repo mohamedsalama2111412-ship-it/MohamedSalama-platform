@@ -27,7 +27,7 @@ export default function App() {
   // 3. مراقبة حالة الدخول (هنا كان الخطأ وتم إصلاح الأقواس)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser && currentUser.email === "mohamed@test.com") {
+      if (currentUser && currentUser.email === "admin@test.com") {
         setUser(currentUser);
         setView("admin_dashboard");
       } else {
